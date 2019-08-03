@@ -161,7 +161,7 @@ void drawLargePixel(int x, int y){
                
                 
                 glEnd();
-                glPointSize(4.0);
+                glPointSize(8.0);
                 glBegin(GL_POINTS);
                     drawPixel(x, y);
                 glEnd();
@@ -183,14 +183,12 @@ void Cohen_SutherLand(int x0, int y0, int x1, int y1){
     while(true){
             if((code0 | code1) == 0){
 
-                  
-
 
                 if(partial == 0) glColor3f(0.0, 1.0, 0.0);
-                else glColor3f(1.0, 1.0, 0.0);
+                else glColor3f(0.5, 0.5, 0.5);
 
-                drawLargePixel(x0, y0);
-                drawLargePixel(x1, y1);
+               if(partial) drawLargePixel(x0, y0);
+                if(partial) drawLargePixel(x1, y1);
 
                 drawLine(x0, y0, x1, y1);
                 return;
@@ -299,7 +297,11 @@ void display(){
     drawGrid();
 
 
-     drawRandomLines(20);
+    Cohen_SutherLand(-100, 0, 100, 100);    // accepted
+    
+    Cohen_SutherLand(-200, -200, 280, 150);  // partial
+    
+    Cohen_SutherLand(-100, 150, 100, 170);   // rejected
 
 
     glEnd();

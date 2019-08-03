@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <unistd.h>
 #include <string.h>
 #include <iostream>
 #include <GL/glut.h>
@@ -26,8 +25,6 @@ void myInit (void){
     glClearColor(0.0, 0.0, 0.0,1.0);
 }
 
-int xc = 0, yc = 0;
-
 void reshape (int w, int h){
   glViewport (0, 0, (GLsizei) w, (GLsizei) h);
   glMatrixMode (GL_PROJECTION);
@@ -42,50 +39,38 @@ void drawPixel(int x, int y){
 }
 
 void drawPixel(int x, int y, int zone){
-
-    int xd, yd;
-
     if(zone == 0) {
         glColor3f(1.0,1.0,1.0);     // white
-        xd = x; yd = y;
+        drawPixel(x, y);
     }
     else if(zone == 1){
-       glColor3f(0.0,1.0,0.0);     // Light green
-        xd = y; yd = x;
-
+        glColor3f(0.0,1.0,0.0);     // Light green
+        drawPixel(y, x);
     }
     else if(zone == 2){
         glColor3f(1.0, 1.0, 0.0);   // Yellow
-        xd = -y; yd = x;
-
+        drawPixel(-y, x);
     }
     else if(zone == 3){
         glColor3f(1.0, 0.0, 0.0);   // Red
-        xd = -x; yd = y;
-
+        drawPixel(-x, y);
     }
     else if(zone == 4){
         glColor3f(1.0, 0.0, 1.0);   // Purple
-        xd = -x; yd = -y;
-
+        drawPixel(-x, -y);
     }
     else if(zone == 5){
         glColor3f(0.0, 0.0, 1.0);   // Blue
-        xd = -y; yd = -x;
-
+        drawPixel(-y, -x);
     }
     else if(zone == 6){
         glColor3f(1.0,0.5,0.0);     // Orange
-        xd = y; yd = -x;
-
+        drawPixel(y, -x);
     }
     else if(zone == 7){
         glColor3f(0.1, 0.5, 0.5);   // Cyan
-        xd = x; yd = -y;
-
+        drawPixel(x, -y);
     }
-
-    drawPixel(xd+xc, yd+yc);
 }
 
 void drawLine_0(int x0, int y0, int x1, int y1, int zone){
@@ -142,34 +127,15 @@ void drawLine(int x0, int y0, int x1, int y1){
     else if(zone == 7) drawLine_0(x0, -y0, x1, -y1, zone);
 }
 
-void draw8way(int x, int y){
-    for(int i = 0; i<8; i++) drawPixel(x, y, i);
-}
+void drawRandomLines(int limit){
+     for(int i = 0; i<limit; i++){
+        int x0 = rand()%640 - 320;
+        int y0 = rand()%480 - 240;
+        int x1 = rand()%640 - 320;
+        int y1 = rand()%480 - 240;
 
-
-
-void drawCircleR0(int r){
-    int d = 5 - 4*r;
-    int x = r, y = 0;
-    draw8way(x, y);
-
-    while(x>y){
-
-      if(d<0){
-        d += (8*y + 12);
-        y++;
-      }
-      else{
-        d += (-8*x + 8*y + 20);
-        x--;
-        y++;
-      }
-      draw8way(x, y);
+        drawLine(x0, y0, x1, y1);
     }
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glFlush();
-
 }
 
 void drawGrid(){
@@ -181,76 +147,19 @@ void drawGrid(){
 
 }
 
-void drawCircle0r(int r){
-  int d = 5 - 4*r;
-  int x = 0, y = r;
-
-  draw8way(x, y);
-
-  while(x<y){
-    if(d<0) {
-      d += (8*x + 12);
-      x++;
-    }
-    else{
-      d += (8*x - 8*y + 20);
-      x++;
-      y--;
-    }
-
-    draw8way(x, y);
-  }
-}
-
 void display(){
     glClear(GL_COLOR_BUFFER_BIT);
-    glLoadIdentity();
-
     glBegin(GL_POINTS);
 
-  //  drawGrid();
+    drawGrid();
 
-    xc = 0;
-    yc = 0;
+   // drawRandomCircles(10);
 
-    int dx = 2, dy = 2, radius = 40;
+   drawRandomLines(30);
 
-    while(true){
-      xc += dx;
-      yc += dy;
-
-      if(dx>0){
-        if(xc+radius>=Wi/2) dx*= -1;
-      }
-      else {
-        if(xc-radius <= -Wi/2) dx *= -1;
-      }
-
-      if(dy>0){
-        if(yc+radius>=He/2) dy*= -1;
-      }
-      else {
-        if(yc-radius <= -He/2) dy *= -1;
-      }
-
-      if(dx>0 && dy>0) glColor3f(1.0,1.0,1.0);
-      else if(dx>0 && dy<0) glColor3f(1.0, 0.0,0.0);
-      else if(dx<0 && dy<0) glColor3f(0.0,0.0,1.0);
-      else glColor3f(0.0,1.0,0.0);
-
-
-      glClear(GL_COLOR_BUFFER_BIT);
-      glBegin(GL_POINTS);
-          drawCircleR0(40);
-      glEnd();
-      glutSwapBuffers();
-
-
-    }
 
     glEnd();
-  //  glFlush();
-  glutSwapBuffers();
+    glFlush();
 }
 
 
@@ -259,7 +168,7 @@ int main (int argc, char **argv){
   srand(time(NULL));
 
   glutInit (&argc, argv); // to initialize the toolkit;
-  glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB); // sets the display mode
+  glutInitDisplayMode (GLUT_SINGLE | GLUT_RGB); // sets the display mode
   glutInitWindowSize (Wi, He); // sets the window size
   glutInitWindowPosition (0, 0); // sets the starting position for the window
   glutCreateWindow ("Line Drawing"); // creates the window and sets the title

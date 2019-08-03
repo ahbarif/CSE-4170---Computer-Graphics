@@ -37,11 +37,11 @@ void reshape (int w, int h){
 void drawPixel(int x, int y){
     glVertex2i(x, y);
 }
-
 void drawPixel(int x, int y, int zone){
     if(zone == 0) {
         glColor3f(1.0,1.0,1.0);     // white
         drawPixel(x, y);
+
     }
     else if(zone == 1){
         glColor3f(0.0,1.0,0.0);     // Light green
@@ -71,15 +71,16 @@ void drawPixel(int x, int y, int zone){
         glColor3f(0.1, 0.5, 0.5);   // Cyan
         drawPixel(x, -y);
     }
+    
 }
 
 void drawLine_0(int x0, int y0, int x1, int y1, int zone){
     int dx = x1 - x0, dy = y1 - y0;
     int d = 2*dy - dx, dE = 2 * dy, dNE = 2*(dy-dx);
     int x = x0, y = y0;
-
+    
     drawPixel(x, y, zone);
-
+    
     while(x<x1){
         if(d>0) {
             x++;
@@ -96,7 +97,7 @@ void drawLine_0(int x0, int y0, int x1, int y1, int zone){
 
 int getZone(int x0, int y0, int x1, int y1){
         int dx = x1 - x0, dy = y1 - y0;
-
+        
         if(dx>=0 && dy>=0){
             if(dx>=dy) return 0;
             else return 1;
@@ -117,6 +118,7 @@ int getZone(int x0, int y0, int x1, int y1){
 
 void drawLine(int x0, int y0, int x1, int y1){
     int zone = getZone(x0, y0, x1, y1);
+   // cout<<"zone = " <<zone<<endl;
     if(zone == 0) drawLine_0(x0, y0, x1, y1, zone);
     else if(zone == 1) drawLine_0(y0, x0, y1, x1, zone);
     else if(zone == 2) drawLine_0(y0, -x0, y1, -x1, zone);
@@ -127,85 +129,57 @@ void drawLine(int x0, int y0, int x1, int y1){
     else if(zone == 7) drawLine_0(x0, -y0, x1, -y1, zone);
 }
 
+void drawCircle(int x0, int y0, int r){
 
-void drawGrid(){
-    int ox = 0, oy = 0;
-    glColor3f(0.7,0.7,0.7); // grey
-
-    for(int i = -320; i<320; i++) glVertex2i(i, 0);
-    for(int i = -240; i<240; i++) glVertex2i(0, i);
-}
-
-int yMax = 100, yMin = -100, xMax = 150, xMin = -150;
-
-struct point{
-    int x, y;
-    point(){}
-    point(int x, int y):x(x), y(y){}
-};
-
-point find_by_t(float t, point st, point en){
-    int x = st.x + t * (en.x - st.x);
-    int y = st.y + t * (en.y - st.y);
-
-    return point(x, y);
-}
-
-void Cyrus_Beck_Line_clipping(int x0, int y0, int x1, int y1){
-    float t, teMax= 0.0, tlMin = 1.0;
-
-    t = (float)(yMax - y0)/(y1-y0);     // top
-    if(y1 >= y0) tlMin = min(tlMin, t);
-    else teMax = max(teMax, t);
-
-    t = (float)(yMin - y0)/(y1-y0);
-    if(y1 < y0) tlMin = min(tlMin, t);
-    else teMax = max(teMax, t);
-
-    t = (float)(xMax - x0)/(x1-x0); // right
-    if(x1 >= x0) tlMin = min(tlMin, t);
-    else teMax = max(teMax, t);
-
-    t = (float)(xMin - x0)/(x1-x0);
-    if(x1 < x0) tlMin = min(tlMin, t);
-    else teMax = max(teMax, t);
-
-    if(tlMin<=1.0 && teMax>=0.0){
-        if(tlMin >= teMax){
-
-            point p0 = find_by_t(teMax, point(x0, y0), point(x1, y1));
-            point p1 = find_by_t(tlMin, point(x0, y0), point(x1, y1));
-
-            drawLine(p0.x, p0.y, p1.x, p1.y);
-        }
+    for(int t = 0; t<360; t += 10){
+        int x1 = x0 + r*cos(t);
+        int y1 = y0 + r*sin(t);
+        drawLine(x0, y0, x1, y1);
     }
 
+}
 
+void drawRandomCircles(int limit){
+  //  640 * 480
+
+    for(int i = 0; i<limit; i++){
+        int x = rand()%640 - 320;
+        int y = rand()%480 - 240;
+        int r = rand()%65 + 35;
+        
+        drawCircle(x, y, r);
+    }
 
 }
+
 void drawRandomLines(int limit){
      for(int i = 0; i<limit; i++){
         int x0 = rand()%640 - 320;
         int y0 = rand()%480 - 240;
         int x1 = rand()%640 - 320;
         int y1 = rand()%480 - 240;
-
-        Cyrus_Beck_Line_clipping(x0, y0, x1, y1);
+    
+        drawLine(x0, y0, x1, y1);
     }
 }
+
 
 void display(){
     glClear(GL_COLOR_BUFFER_BIT);
     glBegin(GL_POINTS);
+   
+ 
+    // drawLine(20, 5, 200, 100);      // 0
+    // drawLine(5, 20, 100, 200);      // 1
+    // drawLine(-5, 20, -100, 200);    // 2
+    // drawLine(-20, 5, -200, 100);    // 3
+    // drawLine(-20, -5, -200, -100);  // 4
+    // drawLine(-5, -20, -100, -200);  // 5
+    // drawLine(5, -20, 100, -200);    // 6
+    // drawLine(20, -5, 200, -100);    // 7
 
-    drawGrid();
-
-    drawRandomLines(100);
-
-    drawLine(xMin, yMin, xMax, yMin);
-    drawLine(xMin, yMax, xMax, yMax);
-    drawLine(xMin, yMin, xMin, yMax);
-    drawLine(xMax, yMin, xMax, yMax);
+    drawRandomCircles(20);
+   // drawRandomLines(50);
 
 
     glEnd();
